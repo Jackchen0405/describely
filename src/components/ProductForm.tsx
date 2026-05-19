@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import Image from "next/image";
-import { PlatformId, TargetMarket } from "@/types";
+import { CopywritingStyle, PlatformId, TargetMarket } from "@/types";
 import { MARKET_OPTIONS } from "@/lib/markets";
 import { PLATFORM_OPTIONS } from "@/lib/platforms";
 
@@ -12,6 +12,7 @@ interface Props {
     category: string;
     targetMarket: TargetMarket;
     platform: PlatformId;
+    copywritingStyle: CopywritingStyle;
     productCost?: number;
     shippingCost?: number;
     profitMargin?: number;
@@ -22,11 +23,18 @@ interface Props {
 
 const MAX_IMAGES = 4;
 const IMAGE_SLOTS = ["主图", "细节图", "包装图", "场景图"];
+const STYLE_OPTIONS: { id: CopywritingStyle; name: string; desc: string }[] = [
+  { id: "conversion", name: "稳妥转化型", desc: "FAB + 场景 + 信任解除，适合 Amazon" },
+  { id: "emotional", name: "情绪种草型", desc: "痛点火花 + 画面感，适合 TikTok Shop" },
+  { id: "brand", name: "品牌质感型", desc: "品牌调性 + 身份感，适合独立站" },
+  { id: "test", name: "爆款测试型", desc: "多角度卖点发散，适合批量测试" },
+];
 
 export default function ProductForm({ onSubmit, loading }: Props) {
   const [images, setImages] = useState<string[]>([]);
   const [market, setMarket] = useState<TargetMarket>("US");
   const [platform, setPlatform] = useState<PlatformId>("amazon");
+  const [copywritingStyle, setCopywritingStyle] = useState<CopywritingStyle>("conversion");
   const [sellingPrice, setSellingPrice] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
   const categoryRef = useRef<HTMLInputElement>(null);
@@ -83,6 +91,7 @@ export default function ProductForm({ onSubmit, loading }: Props) {
       category,
       targetMarket: market,
       platform,
+      copywritingStyle,
       productCost: pcVal ? parseFloat(pcVal) : undefined,
       shippingCost: scVal ? parseFloat(scVal) : undefined,
       profitMargin: pmVal ? parseFloat(pmVal) : undefined,
@@ -126,6 +135,30 @@ export default function ProductForm({ onSubmit, loading }: Props) {
             <span className="text-xs font-medium text-warm-400">推荐填写方式</span>
             <p className="mt-1 text-sm text-warm-600">产品名尽量写清材质、用途和核心差异，后续 AI 会自动本地化。</p>
           </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-warm-200 bg-white p-5">
+        <div className="mb-5">
+          <h3 className="text-base font-bold text-warm-900">文案风格强度</h3>
+          <p className="mt-1 text-sm text-warm-500">让 AI 按不同平台和使用场景控制文案张力，不是一味写得夸张。</p>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {STYLE_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => setCopywritingStyle(opt.id)}
+              className={`rounded-xl border p-3 text-left transition-all ${
+                copywritingStyle === opt.id
+                  ? "border-accent bg-accent/10 shadow-sm ring-2 ring-accent/15"
+                  : "border-warm-200 bg-warm-50/60 hover:border-accent-light"
+              }`}
+            >
+              <span className="block text-sm font-semibold text-warm-800">{opt.name}</span>
+              <span className="mt-1 block text-xs leading-5 text-warm-400">{opt.desc}</span>
+            </button>
+          ))}
         </div>
       </section>
 

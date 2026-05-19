@@ -86,7 +86,7 @@ export default function FeedbackPage() {
         <div className="mx-auto max-w-2xl px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link href="/" className="text-lg font-bold text-warm-900 hover:text-warm-700 transition-colors">
-              Describely
+              buluba
             </Link>
             <span className="text-xs text-warm-400 bg-warm-100 rounded-full px-2 py-0.5">Beta</span>
           </div>

@@ -1,5 +1,6 @@
 export type TargetMarket = "US" | "UK" | "DE" | "FR" | "JP" | "KR" | "ES" | "IT" | "BR" | "MX";
 export type PlatformId = "amazon" | "shopify" | "tiktok" | "woocommerce";
+export type CopywritingStyle = "conversion" | "emotional" | "brand" | "test";
 
 export interface MarketConfig {
   country: string;
@@ -28,6 +29,7 @@ export interface ProductBasicInput {
   category: string;
   targetMarket: TargetMarket;
   platform: PlatformId;
+  copywritingStyle?: CopywritingStyle;
   productCost?: number;
   shippingCost?: number;
   profitMargin?: number;
@@ -45,6 +47,7 @@ export interface ProductFullInput {
   category: string;
   targetMarket: TargetMarket;
   platform: PlatformId;
+  copywritingStyle?: CopywritingStyle;
   answers: Record<string, string>;
   imageAnalysis: ImageAnalysis | null;
   productCost?: number;
@@ -120,6 +123,7 @@ export interface GenerationHistoryEntry {
   category: string;
   targetMarket: TargetMarket;
   platform: PlatformId;
+  copywritingStyle?: CopywritingStyle;
   result: GeneratedProduct;
   usage: TokenUsage;
   createdAt: string;

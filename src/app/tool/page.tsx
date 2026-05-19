@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AuthStatus from "@/components/AuthStatus";
 import { useAuth } from "@/components/AuthProvider";
-import { TargetMarket, ImageAnalysis, GeneratedProduct, MarketConfig, FollowUpQuestion, TokenUsage, PlatformId } from "@/types";
+import { CopywritingStyle, TargetMarket, ImageAnalysis, GeneratedProduct, MarketConfig, FollowUpQuestion, TokenUsage, PlatformId } from "@/types";
 import ProductForm from "@/components/ProductForm";
 import FollowUpQuestions from "@/components/FollowUpQuestions";
 import GeneratedResults from "@/components/GeneratedResults";
@@ -69,6 +69,7 @@ interface BasicInfo {
   category: string;
   targetMarket: TargetMarket;
   platform: PlatformId;
+  copywritingStyle?: CopywritingStyle;
   productCost?: number;
   shippingCost?: number;
   profitMargin?: number;
@@ -128,7 +129,7 @@ export default function ToolPage() {
     try {
       const res = await fetch("/api/generate", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: basicInfo.name, category: basicInfo.category, targetMarket: basicInfo.targetMarket, platform: basicInfo.platform, productCost: basicInfo.productCost, shippingCost: basicInfo.shippingCost, profitMargin: basicInfo.profitMargin, answers: cleanAnswers, competitorReviews, imageAnalysis }),
+        body: JSON.stringify({ name: basicInfo.name, category: basicInfo.category, targetMarket: basicInfo.targetMarket, platform: basicInfo.platform, copywritingStyle: basicInfo.copywritingStyle, productCost: basicInfo.productCost, shippingCost: basicInfo.shippingCost, profitMargin: basicInfo.profitMargin, answers: cleanAnswers, competitorReviews, imageAnalysis }),
       });
       if (!res.ok) { const err = await res.json(); throw new Error(err.error || "生成失败"); }
       const json = await res.json();
@@ -159,7 +160,7 @@ export default function ToolPage() {
       <header className="sticky top-0 z-20 border-b border-warm-200 bg-cream/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-6 py-4">
           <div className="flex items-center gap-2">
-            <Link href="/" className="text-lg font-bold text-warm-900 tracking-tight hover:text-accent transition-colors">Describely</Link>
+            <Link href="/" className="text-lg font-bold text-warm-900 tracking-tight hover:text-accent transition-colors">buluba</Link>
             <span className="hidden rounded-full bg-warm-100 px-2 py-0.5 text-xs font-medium text-warm-500 sm:inline">Listing Workspace</span>
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -230,7 +231,7 @@ export default function ToolPage() {
               {step === "form" ? "补齐商品输入" : step === "questions" ? "回答 AI 追问" : "检查输出结果"}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-emerald-50/75">
-              {step === "form" ? "建议至少填写产品名、品类、目标市场和平台。图片越完整，追问越精准。" : step === "questions" ? "回答越具体，生成结果越像真正运营写出来的 Listing。" : "复制前先看字数、平台模板、SEO 和定价建议。"}
+              {step === "form" ? "建议至少填写产品名、品类、目标市场、平台和文案风格。图片越完整，追问越精准。" : step === "questions" ? "回答越具体，AI 越能把卖点翻译成场景、痛点和购买理由。" : "复制前先看字数、平台模板、SEO、定价建议和文案张力是否匹配平台。"}
             </p>
           </div>
 
@@ -248,7 +249,7 @@ export default function ToolPage() {
 
           <div className="rounded-2xl border border-warm-200 bg-warm-50 p-5">
             <h3 className="text-sm font-bold text-warm-900">小提示</h3>
-            <p className="mt-2 text-sm leading-relaxed text-warm-500">竞品差评可以先不填，但如果你有 1-2 星差评原文，AI 会更容易找到反制卖点。</p>
+            <p className="mt-2 text-sm leading-relaxed text-warm-500">填写信息时尽量说清楚“用户为什么买、在哪用、最怕什么”。竞品 1-2 星差评也很有用，AI 会更容易找到反制卖点。</p>
           </div>
         </aside>
       </main>

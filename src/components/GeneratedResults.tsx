@@ -34,6 +34,20 @@ function CopyBtn({ text }: { text: string }) {
   );
 }
 
+function cleanGeneratedText(text?: string) {
+  return (text || "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>\s*<p>/gi, "\n\n")
+    .replace(/<\/?p>/gi, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function isInternalPlatformNote(note: string) {
+  return /json|title|shortDescription|longDescription|backendKeywords|platformFields/i.test(note);
+}
+
 function CharCounter({ text, max }: { text: string; max: number }) {
   const len = text.length;
   const over = len > max;
@@ -141,9 +155,15 @@ export default function GeneratedResults({ result, imageAnalysis, hasVision, mar
   const [activeField, setActiveField] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
 
-  const getValue = (key: string, fallback: string) => revised[key] ?? fallback;
-  const handleRevised = (key: string, value: string) => setRevised(prev => ({ ...prev, [key]: value }));
+  const getValue = (key: string, fallback: string) => cleanGeneratedText(revised[key] ?? fallback);
+  const handleRevised = (key: string, value: string) => setRevised(prev => ({ ...prev, [key]: cleanGeneratedText(value) }));
   const bulletPoints = result.bulletPoints.map((bp, i) => getValue(`bullet-${i}`, bp));
+  const platformFields = (result.platformFields || [])
+    .map((field) => ({ ...field, value: cleanGeneratedText(field.value) }))
+    .filter((field) => field.label || field.value);
+  const platformNotes = (result.platformNotes || [])
+    .map(cleanGeneratedText)
+    .filter((note) => note && !isInternalPlatformNote(note));
   const handleNext = () => {
     setFinishing(true);
     window.setTimeout(() => {
@@ -193,7 +213,7 @@ export default function GeneratedResults({ result, imageAnalysis, hasVision, mar
         </div>
       )}
 
-      {((result.platformFields?.length || 0) > 0 || (result.platformNotes?.length || 0) > 0) && (
+      {((platformFields.length || 0) > 0 || (platformNotes.length || 0) > 0) && (
         <div className="rounded-xl border border-warm-200 bg-white p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -201,13 +221,13 @@ export default function GeneratedResults({ result, imageAnalysis, hasVision, mar
               <p className="text-xs text-warm-400 mt-0.5">根据所选上架平台整理的可粘贴字段</p>
             </div>
             <CopyBtn text={[
-              ...(result.platformFields || []).map((field) => `${field.label}: ${field.value}`),
-              ...(result.platformNotes || []).map((note) => `注意: ${note}`),
+              ...platformFields.map((field) => `${field.label}: ${field.value}`),
+              ...platformNotes.map((note) => `注意: ${note}`),
             ].join("\n")} />
           </div>
-          {result.platformFields && result.platformFields.length > 0 && (
+          {platformFields.length > 0 && (
             <div className="grid gap-3 sm:grid-cols-2">
-              {result.platformFields.map((field, i) => (
+              {platformFields.map((field, i) => (
                 <div key={`${field.label}-${i}`} className="rounded-lg border border-warm-100 bg-warm-50/60 p-3">
                   <div className="mb-1 flex items-center justify-between gap-2">
                     <span className="text-xs font-medium text-warm-500">{field.label}</span>
@@ -218,9 +238,9 @@ export default function GeneratedResults({ result, imageAnalysis, hasVision, mar
               ))}
             </div>
           )}
-          {result.platformNotes && result.platformNotes.length > 0 && (
+          {platformNotes.length > 0 && (
             <div className="space-y-2">
-              {result.platformNotes.map((note, i) => (
+              {platformNotes.map((note, i) => (
                 <p key={i} className="text-xs text-warm-500">• {note}</p>
               ))}
             </div>

@@ -40,6 +40,7 @@ export function addHistoryEntry(userId: string, input: ProductFullInput, result:
     category: input.category,
     targetMarket: input.targetMarket,
     platform: input.platform,
+    copywritingStyle: input.copywritingStyle,
     result,
     usage,
     createdAt: new Date().toISOString(),
@@ -51,4 +52,8 @@ export function addHistoryEntry(userId: string, input: ProductFullInput, result:
 
 export function getHistoryForUser(userId: string) {
   return readAllHistory().filter((entry) => entry.userId === userId);
+}
+
+export function getHistoryEntryForUser(userId: string, id: string) {
+  return readAllHistory().find((entry) => entry.userId === userId && entry.id === id) || null;
 }

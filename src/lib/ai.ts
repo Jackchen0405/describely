@@ -7,6 +7,7 @@ import {
   FollowUpQuestion,
   MarketConfig,
   TokenUsage,
+  CopywritingStyle,
 } from "@/types";
 import { MARKETS } from "@/lib/markets";
 import { PLATFORMS } from "@/lib/platforms";
@@ -87,6 +88,24 @@ function fmtCost(input: ProductBasicInput): string {
   return parts.length > 0 ? parts.join("，") : "";
 }
 
+function cleanGeneratedText(text?: string) {
+  return (text || "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>\s*<p>/gi, "\n\n")
+    .replace(/<\/?p>/gi, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function cleanPlatformNotes(notes: unknown) {
+  if (!Array.isArray(notes)) return [];
+  return notes
+    .map((note) => cleanGeneratedText(String(note || "")))
+    .filter((note) => note && !/json|title|shortDescription|longDescription|backendKeywords|platformFields/i.test(note))
+    .slice(0, 5);
+}
+
 // Step 1: 分析产品图片（可选，支持多张）
 export async function analyzeProductImage(
   imageBase64s: string[],
@@ -138,6 +157,7 @@ export async function generateFollowUpQuestions(
 ): Promise<{ questions: FollowUpQuestion[]; usage: TokenUsage }> {
   const market = MARKETS[input.targetMarket];
   const platform = PLATFORMS[input.platform || "amazon"];
+  const styleGuide = getCopywritingStyleGuide(input.copywritingStyle || "conversion");
 
   let imageContext = "";
   if (imageAnalysis) {
@@ -152,6 +172,7 @@ export async function generateFollowUpQuestions(
 **品类**：${input.category}
 **上架平台**：${platform.name}（${platform.primaryUse}）
 **平台重点**：${platform.outputFocus}
+**文案风格**：${styleGuide.name}。${styleGuide.followUpFocus}
 ${costInfo ? `**成本信息**：${costInfo}` : ""}
 ${imageContext}
 
@@ -160,6 +181,7 @@ ${imageContext}
 规则：
 - 追问必须针对这个品类的关键卖点（比如服装问面料和尺码，3C产品问规格和兼容性，食品问配料和保质期）
 - 追问要结合${platform.name}的填写字段和转化重点：${platform.requiredFields.join("、")}
+- 追问要服务于文案张力：至少覆盖“用户使用场景、真实痛点、购买顾虑、产品差异”中的关键缺口
 - 追问要能帮AI写出更有说服力的文案，而不是无聊的行政信息
 - 用中文提问（因为用户是中国人），但提示用户答案会被翻译成${market.language}
 - 每个追问附带一个placeholder示例
@@ -207,6 +229,7 @@ export async function generateProductContent(
   const market = MARKETS[input.targetMarket];
   const platform = PLATFORMS[input.platform || "amazon"];
   const lim = market.charLimits;
+  const styleGuide = getCopywritingStyleGuide(input.copywritingStyle || "conversion");
 
   const systemPrompt = `你是一位${market.country}顶级电商文案专家，专门为跨境卖家撰写高转化率产品文案。
 你精通${market.language}的电商文案写作，了解${market.country}消费者的购物心理和亚马逊/电商平台SEO最佳实践。
@@ -217,13 +240,17 @@ export async function generateProductContent(
 - 标题要有搜索友好度但避免关键词堆砌
 - 短描述一句勾住买家，突出核心卖点
 - 五点描述 (bulletPoints) 是Listing的核心转化模块，每条聚焦一个差异化卖点，5条覆盖功能、质量、场景、售后、情感等不同维度，避免重复。每条以大写字母开头，不含句号结尾
-- 长描述讲故事，把产品特点自然转化为购买理由，适当使用HTML换行<br>分段
+- 长描述讲故事，把产品特点自然转化为购买理由；只使用纯文本和自然段换行，禁止输出<br>、<p>等HTML标签
 - 后台搜索词 (backendKeywords) 放标题和描述中塞不下的同义词、拼写变体、外语词、长尾词，每项用英文逗号分隔，不要重复标题已有的词
 - A+内容 (aPlusContent) 是品牌展示模块，brandStory写品牌理念（1段），featureModules提供3个图文模块（标题+正文），每个模块讲一个购买理由
 - 平台：${platform.name}。平台字段重点：${platform.requiredFields.join("、")}
 - ${platform.name}文案风格：${platform.tone}
 - 平台输出重点：${platform.outputFocus}
 - ${market.country}市场的电商文案风格：${getMarketStyle(input.targetMarket)}
+- 文案风格强度：${styleGuide.name}。${styleGuide.prompt}
+- 如果选择的是情绪种草型，短描述、视频钩子、长描述开头和至少2条五点必须明显体现“痛点瞬间、使用画面、情绪反差”之一；但仍要符合${platform.name}的合规和克制程度。
+- 必须使用“五段式文案张力引擎”：1）FAB，把产品特性翻译成用户收益；2）场景思维，让用户产生正在使用的画面；3）情绪思维，找到真实痛点或期待，但不虚假夸张；4）活人思维，让表达像懂用户的人在说话；5）身份感思维，在适合的品类里让产品代表审美、身份或品位。
+- 不要只介绍产品，要改变用户看待产品的角度和选择商品的标准。
 - URL slug 用英文（SEO国际惯例）
 - 所有内容必须原创，避免模板化`;
 
@@ -256,6 +283,7 @@ export async function generateProductContent(
 - 目标市场：${market.country}（${market.language} / ${market.currency}）
 - 上架平台：${platform.name}
 - 平台字段：${platform.requiredFields.join("、")}
+- 文案风格：${styleGuide.name}
 ${pricingSection}
 ## 补充信息（用户回答AI追问）
 ${answersText}
@@ -281,7 +309,7 @@ ${competitorContext}
   "shortDescription": "一句话短描述，≤${lim.shortDescription}字符",
   "bulletPoints": ["卖点1，≤${lim.bulletPoint}字符", "卖点2", "卖点3", "卖点4", "卖点5"],
   "backendKeywords": "同义词, 拼写变体, 长尾词词组, 外语词 ≤${lim.backendKeywords}字符",
-  "platformNotes": ["针对${platform.name}上架时需要注意的填写建议1", "建议2", "建议3"],
+  "platformNotes": ["只写给卖家看的平台上架建议，不要提JSON、字段名、title、shortDescription等技术说明", "建议2", "建议3"],
   "platformFields": [
     {"label": "${platform.requiredFields[0] || "平台字段"}", "value": "可直接粘贴的平台字段内容"},
     {"label": "${platform.requiredFields[1] || "平台字段"}", "value": "可直接粘贴的平台字段内容"},
@@ -336,31 +364,40 @@ ${competitorContext}
 
   return {
     result: {
-      title: parsed.title || "",
-      shortDescription: parsed.shortDescription || "",
-      longDescription: parsed.longDescription || "",
-      bulletPoints: Array.isArray(parsed.bulletPoints) ? parsed.bulletPoints.slice(0, 5) : [],
-      backendKeywords: parsed.backendKeywords || "",
-      platformNotes: Array.isArray(parsed.platformNotes) ? parsed.platformNotes.slice(0, 5) : [],
+      title: cleanGeneratedText(parsed.title),
+      shortDescription: cleanGeneratedText(parsed.shortDescription),
+      longDescription: cleanGeneratedText(parsed.longDescription),
+      bulletPoints: Array.isArray(parsed.bulletPoints) ? parsed.bulletPoints.slice(0, 5).map(cleanGeneratedText) : [],
+      backendKeywords: cleanGeneratedText(parsed.backendKeywords),
+      platformNotes: cleanPlatformNotes(parsed.platformNotes),
       platformFields: Array.isArray(parsed.platformFields)
         ? parsed.platformFields.slice(0, 6).map((field: { label?: string; value?: string }) => ({
             label: field.label || "",
-            value: field.value || "",
+            value: cleanGeneratedText(field.value),
           })).filter((field) => field.label || field.value)
         : [],
       aPlusContent: {
-        brandStory: aPlus?.brandStory || "",
-        featureModules,
+        brandStory: cleanGeneratedText(aPlus?.brandStory),
+        featureModules: featureModules.map((mod) => ({
+          title: cleanGeneratedText(mod.title),
+          body: cleanGeneratedText(mod.body),
+        })),
       },
-      competitorInsights: parsed.competitorInsights || undefined,
-      productSlug: parsed.productSlug || "",
+      competitorInsights: cleanGeneratedText(parsed.competitorInsights) || undefined,
+      productSlug: cleanGeneratedText(parsed.productSlug),
       seo: {
-        focusKeyword: parsed.seo?.focusKeyword || "",
-        seoTitle: parsed.seo?.seoTitle || "",
-        alias: parsed.seo?.alias || "",
-        metaDescription: parsed.seo?.metaDescription || "",
+        focusKeyword: cleanGeneratedText(parsed.seo?.focusKeyword),
+        seoTitle: cleanGeneratedText(parsed.seo?.seoTitle),
+        alias: cleanGeneratedText(parsed.seo?.alias),
+        metaDescription: cleanGeneratedText(parsed.seo?.metaDescription),
       },
-      suggestedPrice: parsed.suggestedPrice || undefined,
+      suggestedPrice: parsed.suggestedPrice
+        ? {
+            local: cleanGeneratedText(parsed.suggestedPrice.local),
+            target: cleanGeneratedText(parsed.suggestedPrice.target),
+            note: cleanGeneratedText(parsed.suggestedPrice.note),
+          }
+        : undefined,
     },
     usage: {
       model: "deepseek-chat",
@@ -384,4 +421,30 @@ function getMarketStyle(targetMarket: string): string {
     MX: "热情友好、强调家庭和实用性",
   };
   return styles[targetMarket] || "专业、信任导向";
+}
+
+function getCopywritingStyleGuide(style: CopywritingStyle): { name: string; prompt: string; followUpFocus: string } {
+  const guides: Record<CopywritingStyle, { name: string; prompt: string; followUpFocus: string }> = {
+    conversion: {
+      name: "稳妥转化型",
+      prompt: "优先使用 FAB、场景、信任解除和购买顾虑处理；表达专业可信，适合 Amazon 和主流平台，不要过度情绪化。",
+      followUpFocus: "追问要优先补齐功能证据、材质规格、使用场景、买家顾虑和竞品差异。",
+    },
+    emotional: {
+      name: "情绪种草型",
+      prompt: "不要只把语气写得活泼。必须先找一个真实的烦恼、尴尬、期待或小确幸，再把卖点翻译成具体画面。短描述要像种草钩子，视频钩子要能让人停下来看，五点里至少2条要出现使用前后的情绪反差或生活场景。避免空泛词，如 amazing、perfect、must-have，避免虚假承诺。",
+      followUpFocus: "追问要挖掘用户最烦的瞬间、最想改变的状态、使用前后的情绪反差。",
+    },
+    brand: {
+      name: "品牌质感型",
+      prompt: "强调品牌调性、审美、身份感和生活方式；适合 Shopify、WooCommerce、独立站详情页和 A+ 内容。",
+      followUpFocus: "追问要补齐品牌气质、目标人群审美、礼赠场景、身份表达和产品背后的设计理由。",
+    },
+    test: {
+      name: "爆款测试型",
+      prompt: "从多个角度发散卖点，但仍保持结构清楚；标题和五点要覆盖不同购买动机，便于后续 A/B 测试。",
+      followUpFocus: "追问要找出多个可测试角度：价格、场景、人群、痛点、情绪、礼品、差异化证据。",
+    },
+  };
+  return guides[style] || guides.conversion;
 }
