@@ -28,7 +28,9 @@ export default function FollowUpQuestions({
   onSubmit,
   onBack,
 }: Props) {
-  const refs = useRef<Map<string, HTMLInputElement>>(new Map());
+  const refs = useRef<Map<string, HTMLInputElement | HTMLTextAreaElement>>(new Map());
+  const otherRef = useRef<HTMLTextAreaElement>(null);
+  const competitorRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = () => {
     const answers: Record<string, string> = {};
@@ -37,6 +39,10 @@ export default function FollowUpQuestions({
       const val = el?.value?.trim() || "";
       if (val) answers[q.id] = val;
     }
+    const otherVal = otherRef.current?.value?.trim() || "";
+    if (otherVal) answers["_other"] = otherVal;
+    const competitorVal = competitorRef.current?.value?.trim() || "";
+    if (competitorVal) answers["_competitorReviews"] = competitorVal;
     onSubmit(answers);
   };
 
@@ -80,6 +86,36 @@ export default function FollowUpQuestions({
             />
           </div>
         ))}
+
+        {/* 自由补充 */}
+        <div>
+          <label className="text-sm font-medium text-zinc-500">
+            其他补充信息（可选）
+          </label>
+          <p className="text-xs text-zinc-400 mb-1.5">如果以上问题没有覆盖到你想强调的卖点，请在这里自由补充。</p>
+          <textarea
+            ref={otherRef}
+            defaultValue={initialAnswers?.["_other"] || ""}
+            placeholder="例如：这款产品在去年的销售数据很好、有明星代言、获得过某个奖项…"
+            rows={3}
+            className="w-full rounded-lg border border-zinc-200 px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-300 focus:border-zinc-400 focus:outline-none resize-none"
+          />
+        </div>
+
+        {/* 竞品差评 */}
+        <div>
+          <label className="text-sm font-medium text-zinc-500">
+            竞品差评参考（可选）
+          </label>
+          <p className="text-xs text-zinc-400 mb-1.5">粘贴竞品1-2星差评原文，AI 会分析痛点并针对性强化你的文案卖点。</p>
+          <textarea
+            ref={competitorRef}
+            defaultValue={initialAnswers?.["_competitorReviews"] || ""}
+            placeholder="例如：&#34;The cup is way too small, can barely fit a regular coffee. The handle gets burning hot after 30 seconds in microwave...&#34;"
+            rows={4}
+            className="w-full rounded-lg border border-amber-200 bg-amber-50/30 px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-300 focus:border-amber-400 focus:outline-none resize-none"
+          />
+        </div>
       </div>
 
       <div className="flex gap-3">

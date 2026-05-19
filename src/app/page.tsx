@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { TargetMarket, ImageAnalysis, GeneratedProduct, MarketConfig, FollowUpQuestion } from "@/types";
+import Link from "next/link";
+import { TargetMarket, ImageAnalysis, GeneratedProduct, MarketConfig, FollowUpQuestion, TokenUsage } from "@/types";
 import ProductForm from "@/components/ProductForm";
 import FollowUpQuestions from "@/components/FollowUpQuestions";
 import GeneratedResults from "@/components/GeneratedResults";
@@ -15,7 +16,7 @@ interface BasicInfo {
   productCost?: number;
   shippingCost?: number;
   profitMargin?: number;
-  imageBase64?: string;
+  imageBase64s?: string[];
 }
 
 export default function Home() {
@@ -30,6 +31,10 @@ export default function Home() {
 
   // Step 2 → 3 之间保留的数据：用户填的答案
   const [savedAnswers, setSavedAnswers] = useState<Record<string, string>>({});
+
+  // Token 用量统计
+  const [analyzeUsage, setAnalyzeUsage] = useState<TokenUsage | null>(null);
+  const [generateUsage, setGenerateUsage] = useState<TokenUsage | null>(null);
 
   // Step 3 结果
   const [result, setResult] = useState<GeneratedProduct | null>(null);
@@ -53,7 +58,8 @@ export default function Home() {
       setQuestions(json.questions);
       setImageAnalysis(json.imageAnalysis);
       setHasVision(json.hasVision);
-      setSavedAnswers({}); // 清空旧答案
+      setAnalyzeUsage(json.usage || null);
+      setSavedAnswers({});
       setStep("questions");
     } catch (err) {
       alert(err instanceof Error ? err.message : "分析失败，请重试");
@@ -67,6 +73,11 @@ export default function Home() {
     if (!basicInfo) return;
     setSavedAnswers(answers);
     setLoading(true);
+
+    const competitorReviews = answers["_competitorReviews"] || undefined;
+    const cleanAnswers = { ...answers };
+    delete cleanAnswers["_competitorReviews"];
+
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -78,7 +89,8 @@ export default function Home() {
           productCost: basicInfo.productCost,
           shippingCost: basicInfo.shippingCost,
           profitMargin: basicInfo.profitMargin,
-          answers,
+          answers: cleanAnswers,
+          competitorReviews,
           imageAnalysis,
         }),
       });
@@ -89,6 +101,7 @@ export default function Home() {
       const json = await res.json();
       setResult(json.result);
       setMarket(json.market);
+      setGenerateUsage(json.usage || null);
       setStep("results");
     } catch (err) {
       alert(err instanceof Error ? err.message : "生成失败，请重试");
@@ -115,6 +128,8 @@ export default function Home() {
     setHasVision(false);
     setResult(null);
     setMarket(null);
+    setAnalyzeUsage(null);
+    setGenerateUsage(null);
   };
 
   return (
@@ -170,12 +185,16 @@ export default function Home() {
             onBack={handleBackToForm}
           />
         )}
-        {step === "results" && result && market && (
+        {step === "results" && result && market && basicInfo && (
           <GeneratedResults
             result={result}
             imageAnalysis={imageAnalysis}
             hasVision={hasVision}
             market={market}
+            productName={basicInfo.name}
+            category={basicInfo.category}
+            analyzeUsage={analyzeUsage}
+            generateUsage={generateUsage}
             onReset={handleReset}
             onBack={handleBackToQuestions}
           />
@@ -184,8 +203,14 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-zinc-100 mt-20">
-        <div className="mx-auto max-w-2xl px-6 py-6 text-center text-xs text-zinc-400">
-          Describely · AI 电商文案助手 · 多市场深度生成
+        <div className="mx-auto max-w-2xl px-6 py-6 flex items-center justify-between text-xs text-zinc-400">
+          <span>Describely · AI 电商文案助手 · 多市场深度生成</span>
+          <Link
+            href="/feedback"
+            className="text-zinc-400 hover:text-zinc-600 transition-colors underline underline-offset-2"
+          >
+            提建议
+          </Link>
         </div>
       </footer>
     </div>

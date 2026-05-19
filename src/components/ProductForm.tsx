@@ -12,13 +12,15 @@ interface Props {
     productCost?: number;
     shippingCost?: number;
     profitMargin?: number;
-    imageBase64?: string;
+    imageBase64s?: string[];
   }) => void;
   loading: boolean;
 }
 
+const MAX_IMAGES = 4;
+
 export default function ProductForm({ onSubmit, loading }: Props) {
-  const [image, setImage] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [market, setMarket] = useState<TargetMarket>("US");
   const [sellingPrice, setSellingPrice] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
@@ -36,17 +38,30 @@ export default function ProductForm({ onSubmit, loading }: Props) {
     else setSellingPrice("");
   };
 
-  const handleImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert("图片不能超过 5MB"); return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = (reader.result as string).split(",")[1];
-      setImage(base64);
-    };
-    reader.readAsDataURL(file);
-  }, []);
+  const handleImages = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) return;
+    const toProcess = files.slice(0, remaining);
+    toProcess.forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) { alert(`${file.name} 超过 5MB`); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(",")[1];
+        setImages((prev) => {
+          if (prev.length >= MAX_IMAGES) return prev;
+          return [...prev, base64];
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+    // Reset input so same file can be re-selected
+    e.target.value = "";
+  }, [images.length]);
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = () => {
     const name = nameRef.current?.value?.trim() || "";
@@ -65,7 +80,7 @@ export default function ProductForm({ onSubmit, loading }: Props) {
       productCost: pcVal ? parseFloat(pcVal) : undefined,
       shippingCost: scVal ? parseFloat(scVal) : undefined,
       profitMargin: pmVal ? parseFloat(pmVal) : undefined,
-      imageBase64: image || undefined,
+      imageBase64s: images.length > 0 ? images : undefined,
     });
   };
 
@@ -93,22 +108,25 @@ export default function ProductForm({ onSubmit, loading }: Props) {
 
       {/* 产品图片 */}
       <div>
-        <label className="text-sm font-medium text-zinc-700">产品图片（可选）</label>
-        <p className="text-xs text-zinc-400 mb-2">AI 会分析图片，帮助生成更精准的追问和文案。</p>
-        {image ? (
-          <div className="relative inline-block">
-            <img src={`data:image/jpeg;base64,${image}`} alt="预览" className="w-40 h-40 object-cover rounded-lg border border-zinc-200" />
-            <button onClick={() => setImage(null)} className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-zinc-800 text-white text-xs flex items-center justify-center hover:bg-zinc-700">×</button>
-          </div>
-        ) : (
-          <label className="flex items-center justify-center w-40 h-40 rounded-lg border-2 border-dashed border-zinc-200 hover:border-zinc-400 cursor-pointer transition-colors">
-            <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
-            <div className="text-center text-zinc-400">
-              <div className="text-2xl">📷</div>
-              <div className="text-xs mt-1">点击上传</div>
+        <label className="text-sm font-medium text-zinc-700">产品图片（可选，最多{MAX_IMAGES}张）</label>
+        <p className="text-xs text-zinc-400 mb-2">AI 会分析每张图片，多角度图片帮助生成更精准的追问和文案。需配置 OPENAI_API_KEY。</p>
+        <div className="flex flex-wrap gap-3">
+          {images.map((img, i) => (
+            <div key={i} className="relative">
+              <img src={`data:image/jpeg;base64,${img}`} alt={`产品图 ${i + 1}`} className="w-28 h-28 object-cover rounded-lg border border-zinc-200" />
+              <button onClick={() => removeImage(i)} className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-zinc-800 text-white text-xs flex items-center justify-center hover:bg-zinc-700">×</button>
             </div>
-          </label>
-        )}
+          ))}
+          {images.length < MAX_IMAGES && (
+            <label className="flex items-center justify-center w-28 h-28 rounded-lg border-2 border-dashed border-zinc-200 hover:border-zinc-400 cursor-pointer transition-colors">
+              <input type="file" accept="image/*" multiple onChange={handleImages} className="hidden" />
+              <div className="text-center text-zinc-400">
+                <div className="text-xl">+</div>
+                <div className="text-xs mt-0.5">{images.length === 0 ? "上传图片" : `${images.length}/${MAX_IMAGES}`}</div>
+              </div>
+            </label>
+          )}
+        </div>
       </div>
 
       {/* 产品基础信息 */}

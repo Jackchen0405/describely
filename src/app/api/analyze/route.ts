@@ -22,14 +22,15 @@ export async function POST(req: NextRequest) {
     const market = MARKETS[input.targetMarket];
 
     let imageAnalysis = null;
-    if (input.imageBase64) {
-      imageAnalysis = await analyzeProductImage(input.imageBase64, input.name, market);
+    if (input.imageBase64s && input.imageBase64s.length > 0) {
+      imageAnalysis = await analyzeProductImage(input.imageBase64s, input.name, market);
     }
 
-    const questions = await generateFollowUpQuestions(input, imageAnalysis);
+    const { questions, usage } = await generateFollowUpQuestions(input, imageAnalysis);
 
     return NextResponse.json({
       questions,
+      usage,
       imageAnalysis,
       hasVision: imageAnalysis !== null,
     });

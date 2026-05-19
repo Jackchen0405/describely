@@ -13,6 +13,10 @@ export interface CharLimits {
   title: number;
   shortDescription: number;
   longDescription: number;
+  bulletPoint: number;
+  backendKeywords: number;
+  aPlusModuleTitle: number;
+  aPlusModuleBody: number;
   focusKeyword: number;
   seoTitle: number;
   metaDescription: number;
@@ -25,7 +29,7 @@ export interface ProductBasicInput {
   productCost?: number;
   shippingCost?: number;
   profitMargin?: number;
-  imageBase64?: string;
+  imageBase64s?: string[];
 }
 
 export interface FollowUpQuestion {
@@ -43,6 +47,7 @@ export interface ProductFullInput {
   productCost?: number;
   shippingCost?: number;
   profitMargin?: number;
+  competitorReviews?: string;
 }
 
 export interface SeoFields {
@@ -52,10 +57,22 @@ export interface SeoFields {
   metaDescription: string;
 }
 
+export interface APlusModule {
+  title: string;
+  body: string;
+}
+
 export interface GeneratedProduct {
   title: string;
   shortDescription: string;
   longDescription: string;
+  bulletPoints: string[];
+  backendKeywords: string;
+  aPlusContent: {
+    brandStory: string;
+    featureModules: APlusModule[];
+  };
+  competitorInsights?: string;
   productSlug: string;
   seo: SeoFields;
   suggestedPrice?: {
@@ -69,4 +86,10 @@ export interface ImageAnalysis {
   productType: string;
   features: string[];
   suggestions: string;
+}
+
+export interface TokenUsage {
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
 }

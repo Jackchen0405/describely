@@ -19,10 +19,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "请选择有效的目标市场" }, { status: 400 });
     }
 
-    const result = await generateProductContent(input, input.imageAnalysis);
+    const { result, usage } = await generateProductContent(input, input.imageAnalysis);
 
     return NextResponse.json({
       result,
+      usage,
       market: MARKETS[input.targetMarket],
     });
   } catch (err) {
