@@ -3,10 +3,28 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Warm premium palette */
+  --color-cream: #FFFBF5;
+  --color-warm-50: #FEF7F0;
+  --color-warm-100: #FDF0E2;
+  --color-warm-200: #F5E1CC;
+  --color-warm-300: #E8D0B8;
+  --color-warm-400: #C4A88C;
+  --color-warm-500: #A08060;
+  --color-warm-600: #8B6340;
+  --color-warm-700: #6B4A2E;
+  --color-warm-800: #4A3020;
+  --color-warm-900: #2D1B10;
+
+  --color-accent: #C8874B;
+  --color-accent-light: #E8C89E;
+  --color-accent-dark: #A06830;
 }
 
 body {
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--color-cream);
 }

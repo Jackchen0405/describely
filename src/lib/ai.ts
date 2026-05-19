@@ -9,6 +9,7 @@ import {
   TokenUsage,
 } from "@/types";
 import { MARKETS } from "@/lib/markets";
+import { PLATFORMS } from "@/lib/platforms";
 
 function safeJsonParse<T>(raw: string): T {
   // 1. 先尝试直接解析
@@ -136,6 +137,7 @@ export async function generateFollowUpQuestions(
   imageAnalysis: ImageAnalysis | null
 ): Promise<{ questions: FollowUpQuestion[]; usage: TokenUsage }> {
   const market = MARKETS[input.targetMarket];
+  const platform = PLATFORMS[input.platform || "amazon"];
 
   let imageContext = "";
   if (imageAnalysis) {
@@ -148,6 +150,8 @@ export async function generateFollowUpQuestions(
 
 **产品名**：${input.name}
 **品类**：${input.category}
+**上架平台**：${platform.name}（${platform.primaryUse}）
+**平台重点**：${platform.outputFocus}
 ${costInfo ? `**成本信息**：${costInfo}` : ""}
 ${imageContext}
 
@@ -155,6 +159,7 @@ ${imageContext}
 
 规则：
 - 追问必须针对这个品类的关键卖点（比如服装问面料和尺码，3C产品问规格和兼容性，食品问配料和保质期）
+- 追问要结合${platform.name}的填写字段和转化重点：${platform.requiredFields.join("、")}
 - 追问要能帮AI写出更有说服力的文案，而不是无聊的行政信息
 - 用中文提问（因为用户是中国人），但提示用户答案会被翻译成${market.language}
 - 每个追问附带一个placeholder示例
@@ -200,6 +205,7 @@ export async function generateProductContent(
   imageAnalysis: ImageAnalysis | null
 ): Promise<{ result: GeneratedProduct; usage: TokenUsage }> {
   const market = MARKETS[input.targetMarket];
+  const platform = PLATFORMS[input.platform || "amazon"];
   const lim = market.charLimits;
 
   const systemPrompt = `你是一位${market.country}顶级电商文案专家，专门为跨境卖家撰写高转化率产品文案。
@@ -214,7 +220,10 @@ export async function generateProductContent(
 - 长描述讲故事，把产品特点自然转化为购买理由，适当使用HTML换行<br>分段
 - 后台搜索词 (backendKeywords) 放标题和描述中塞不下的同义词、拼写变体、外语词、长尾词，每项用英文逗号分隔，不要重复标题已有的词
 - A+内容 (aPlusContent) 是品牌展示模块，brandStory写品牌理念（1段），featureModules提供3个图文模块（标题+正文），每个模块讲一个购买理由
-- ${market.country}市场的电商文案风格：${getMarketStyle(market)}
+- 平台：${platform.name}。平台字段重点：${platform.requiredFields.join("、")}
+- ${platform.name}文案风格：${platform.tone}
+- 平台输出重点：${platform.outputFocus}
+- ${market.country}市场的电商文案风格：${getMarketStyle(input.targetMarket)}
 - URL slug 用英文（SEO国际惯例）
 - 所有内容必须原创，避免模板化`;
 
@@ -245,6 +254,8 @@ export async function generateProductContent(
 - 产品名：${input.name}
 - 品类：${input.category}
 - 目标市场：${market.country}（${market.language} / ${market.currency}）
+- 上架平台：${platform.name}
+- 平台字段：${platform.requiredFields.join("、")}
 ${pricingSection}
 ## 补充信息（用户回答AI追问）
 ${answersText}
@@ -270,6 +281,12 @@ ${competitorContext}
   "shortDescription": "一句话短描述，≤${lim.shortDescription}字符",
   "bulletPoints": ["卖点1，≤${lim.bulletPoint}字符", "卖点2", "卖点3", "卖点4", "卖点5"],
   "backendKeywords": "同义词, 拼写变体, 长尾词词组, 外语词 ≤${lim.backendKeywords}字符",
+  "platformNotes": ["针对${platform.name}上架时需要注意的填写建议1", "建议2", "建议3"],
+  "platformFields": [
+    {"label": "${platform.requiredFields[0] || "平台字段"}", "value": "可直接粘贴的平台字段内容"},
+    {"label": "${platform.requiredFields[1] || "平台字段"}", "value": "可直接粘贴的平台字段内容"},
+    {"label": "${platform.requiredFields[2] || "平台字段"}", "value": "可直接粘贴的平台字段内容"}
+  ],
   "longDescription": "详细描述：产品故事、特点、场景、购买理由，≤${lim.longDescription}字符",
   "aPlusContent": {
     "brandStory": "品牌理念文案，用${market.language}",
@@ -324,6 +341,13 @@ ${competitorContext}
       longDescription: parsed.longDescription || "",
       bulletPoints: Array.isArray(parsed.bulletPoints) ? parsed.bulletPoints.slice(0, 5) : [],
       backendKeywords: parsed.backendKeywords || "",
+      platformNotes: Array.isArray(parsed.platformNotes) ? parsed.platformNotes.slice(0, 5) : [],
+      platformFields: Array.isArray(parsed.platformFields)
+        ? parsed.platformFields.slice(0, 6).map((field: { label?: string; value?: string }) => ({
+            label: field.label || "",
+            value: field.value || "",
+          })).filter((field) => field.label || field.value)
+        : [],
       aPlusContent: {
         brandStory: aPlus?.brandStory || "",
         featureModules,
@@ -346,7 +370,7 @@ ${competitorContext}
   };
 }
 
-function getMarketStyle(market: MarketConfig): string {
+function getMarketStyle(targetMarket: string): string {
   const styles: Record<string, string> = {
     US: "直接、利益导向、强调价值和生活方式",
     UK: "优雅克制、强调品质和传统",
@@ -359,5 +383,5 @@ function getMarketStyle(market: MarketConfig): string {
     BR: "热情直接、强调性价比和社交属性",
     MX: "热情友好、强调家庭和实用性",
   };
-  return styles[market.country] || "专业、信任导向";
+  return styles[targetMarket] || "专业、信任导向";
 }

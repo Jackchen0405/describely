@@ -42,3 +42,5 @@ next-env.d.ts
 
 # misc
 *.png
+data/users.json
+data/history.json

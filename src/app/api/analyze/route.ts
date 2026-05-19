@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { analyzeProductImage, generateFollowUpQuestions } from "@/lib/ai";
 import { ProductBasicInput } from "@/types";
 import { MARKETS } from "@/lib/markets";
+import { PLATFORMS } from "@/lib/platforms";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -17,6 +18,9 @@ export async function POST(req: NextRequest) {
 
     if (!input.targetMarket || !MARKETS[input.targetMarket]) {
       return NextResponse.json({ error: "请选择有效的目标市场" }, { status: 400 });
+    }
+    if (!input.platform || !PLATFORMS[input.platform]) {
+      input.platform = "amazon";
     }
 
     const market = MARKETS[input.targetMarket];

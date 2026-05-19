@@ -1,14 +1,17 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { TargetMarket } from "@/types";
+import Image from "next/image";
+import { PlatformId, TargetMarket } from "@/types";
 import { MARKET_OPTIONS } from "@/lib/markets";
+import { PLATFORM_OPTIONS } from "@/lib/platforms";
 
 interface Props {
   onSubmit: (data: {
     name: string;
     category: string;
     targetMarket: TargetMarket;
+    platform: PlatformId;
     productCost?: number;
     shippingCost?: number;
     profitMargin?: number;
@@ -18,10 +21,12 @@ interface Props {
 }
 
 const MAX_IMAGES = 4;
+const IMAGE_SLOTS = ["主图", "细节图", "包装图", "场景图"];
 
 export default function ProductForm({ onSubmit, loading }: Props) {
   const [images, setImages] = useState<string[]>([]);
   const [market, setMarket] = useState<TargetMarket>("US");
+  const [platform, setPlatform] = useState<PlatformId>("amazon");
   const [sellingPrice, setSellingPrice] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
   const categoryRef = useRef<HTMLInputElement>(null);
@@ -77,6 +82,7 @@ export default function ProductForm({ onSubmit, loading }: Props) {
       name,
       category,
       targetMarket: market,
+      platform,
       productCost: pcVal ? parseFloat(pcVal) : undefined,
       shippingCost: scVal ? parseFloat(scVal) : undefined,
       profitMargin: pmVal ? parseFloat(pmVal) : undefined,
@@ -85,86 +91,153 @@ export default function ProductForm({ onSubmit, loading }: Props) {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-bold text-zinc-900">上传产品，一键生成全套文案</h2>
-        <p className="mt-1 text-sm text-zinc-500">填写基本信息后，AI 会追问关键细节，再为你生成目标市场的精准文案。</p>
-      </div>
-
-      {/* 目标市场 */}
-      <div>
-        <label className="text-sm font-medium text-zinc-700">目标市场 <span className="text-red-400">*</span></label>
-        <p className="text-xs text-zinc-400 mb-2">影响输出语言、币种和SEO策略</p>
-        <select
-          value={market}
-          onChange={(e) => setMarket(e.target.value as TargetMarket)}
-          className="w-full rounded-lg border border-zinc-200 px-4 py-2.5 text-sm text-zinc-800 focus:border-zinc-400 focus:outline-none bg-white"
-        >
-          {MARKET_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* 产品图片 */}
-      <div>
-        <label className="text-sm font-medium text-zinc-700">产品图片（可选，最多{MAX_IMAGES}张）</label>
-        <p className="text-xs text-zinc-400 mb-2">AI 会分析每张图片，多角度图片帮助生成更精准的追问和文案。需配置 OPENAI_API_KEY。</p>
-        <div className="flex flex-wrap gap-3">
-          {images.map((img, i) => (
-            <div key={i} className="relative">
-              <img src={`data:image/jpeg;base64,${img}`} alt={`产品图 ${i + 1}`} className="w-28 h-28 object-cover rounded-lg border border-zinc-200" />
-              <button onClick={() => removeImage(i)} className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-zinc-800 text-white text-xs flex items-center justify-center hover:bg-zinc-700">×</button>
-            </div>
-          ))}
-          {images.length < MAX_IMAGES && (
-            <label className="flex items-center justify-center w-28 h-28 rounded-lg border-2 border-dashed border-zinc-200 hover:border-zinc-400 cursor-pointer transition-colors">
-              <input type="file" accept="image/*" multiple onChange={handleImages} className="hidden" />
-              <div className="text-center text-zinc-400">
-                <div className="text-xl">+</div>
-                <div className="text-xs mt-0.5">{images.length === 0 ? "上传图片" : `${images.length}/${MAX_IMAGES}`}</div>
-              </div>
-            </label>
-          )}
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 border-b border-warm-100 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <span className="text-xs font-semibold uppercase text-accent-dark">Step 1 / Product Intake</span>
+          <h2 className="mt-2 text-3xl font-bold tracking-normal text-warm-900">上传产品资料</h2>
+          <p className="mt-2 text-sm text-warm-500">把图片、平台、市场和成本先整理好，AI 才能问出真正有用的问题。</p>
+        </div>
+        <div className="rounded-full border border-warm-200 bg-warm-50 px-4 py-2 text-xs font-medium text-warm-500">
+          预计 2 分钟完成
         </div>
       </div>
 
-      {/* 产品基础信息 */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <label className="text-sm font-medium text-zinc-700">产品名 <span className="text-red-400">*</span></label>
-          <input ref={nameRef} defaultValue="" placeholder="如：中国手工石制茶宠摆件·钟馗"
-            className="mt-1 w-full rounded-lg border border-zinc-200 px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-300 focus:border-zinc-400 focus:outline-none" />
+      <section className="rounded-2xl border border-warm-200 bg-warm-50/50 p-5">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-base font-bold text-warm-900">商品基础资料</h3>
+            <p className="mt-1 text-sm text-warm-500">先让 AI 知道这是一个什么产品。</p>
+          </div>
+          <span className="rounded-full bg-white px-3 py-1 text-xs text-warm-400">必填</span>
         </div>
-        <div>
-          <label className="text-sm font-medium text-zinc-700">品类 <span className="text-red-400">*</span></label>
-          <input ref={categoryRef} defaultValue="" placeholder="如：茶宠摆件"
-            className="mt-1 w-full rounded-lg border border-zinc-200 px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-300 focus:border-zinc-400 focus:outline-none" />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-zinc-700">产品拿货价 ¥</label>
-          <input ref={productCostRef} type="number" defaultValue="" placeholder="如：68" onChange={updatePrice}
-            className="mt-1 w-full rounded-lg border border-zinc-200 px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-300 focus:border-zinc-400 focus:outline-none" />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-zinc-700">物流费用 ¥</label>
-          <input ref={shippingCostRef} type="number" defaultValue="" placeholder="如：15" onChange={updatePrice}
-            className="mt-1 w-full rounded-lg border border-zinc-200 px-4 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-300 focus:border-zinc-400 focus:outline-none" />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-zinc-700">期望利润率 %</label>
-          <div className="relative mt-1">
-            <input ref={profitMarginRef} type="number" defaultValue="40" onChange={updatePrice}
-              className="w-full rounded-lg border border-zinc-200 px-4 py-2.5 text-sm text-zinc-800 focus:border-zinc-400 focus:outline-none" />
-            {sellingPrice && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400">建议售价 ¥{sellingPrice}</span>
-            )}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className="text-sm font-medium text-warm-700">产品名 <span className="text-red-400">*</span></label>
+            <input ref={nameRef} defaultValue="" placeholder="如：中国手工石制茶宠摆件·钟馗"
+              className="mt-1.5 w-full rounded-xl border border-warm-200 bg-white px-4 py-3 text-sm text-warm-800 placeholder:text-warm-300 shadow-sm transition-all focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20" />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-warm-700">品类 <span className="text-red-400">*</span></label>
+            <input ref={categoryRef} defaultValue="" placeholder="如：茶宠摆件"
+              className="mt-1.5 w-full rounded-xl border border-warm-200 bg-white px-4 py-3 text-sm text-warm-800 placeholder:text-warm-300 shadow-sm transition-all focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20" />
+          </div>
+          <div className="rounded-xl border border-warm-200 bg-white px-4 py-3">
+            <span className="text-xs font-medium text-warm-400">推荐填写方式</span>
+            <p className="mt-1 text-sm text-warm-600">产品名尽量写清材质、用途和核心差异，后续 AI 会自动本地化。</p>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section className="rounded-2xl border border-warm-200 bg-white p-5">
+        <div className="mb-5">
+          <h3 className="text-base font-bold text-warm-900">上架目标</h3>
+          <p className="mt-1 text-sm text-warm-500">国家决定语言、币种和 SEO，平台决定字段结构。</p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-[0.9fr_1.3fr]">
+          <div>
+            <label className="text-sm font-medium text-warm-700">目标市场 <span className="text-red-400">*</span></label>
+            <select
+              value={market}
+              onChange={(e) => setMarket(e.target.value as TargetMarket)}
+              className="mt-1.5 w-full rounded-xl border border-warm-200 bg-white px-4 py-3 text-sm text-warm-800 shadow-sm transition-all focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            >
+              {MARKET_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-warm-700">上架平台 <span className="text-red-400">*</span></label>
+            <div className="mt-1.5 grid grid-cols-2 gap-2">
+              {PLATFORM_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setPlatform(opt.id)}
+                  className={`rounded-xl border p-3 text-left transition-all ${
+                    platform === opt.id
+                      ? "border-accent bg-accent/10 shadow-sm ring-2 ring-accent/15"
+                      : "border-warm-200 bg-white hover:border-accent-light"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold text-warm-800">{opt.shortName}</span>
+                  <span className="mt-0.5 block text-xs text-warm-400">{opt.primaryUse}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-warm-200 bg-white p-5">
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 className="text-base font-bold text-warm-900">图片素材</h3>
+            <p className="mt-1 text-sm text-warm-500">建议上传主图、细节、包装、场景。没有图片也可以继续。</p>
+          </div>
+          <span className="text-xs text-warm-400">{images.length}/{MAX_IMAGES} 已上传</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {IMAGE_SLOTS.map((slot, i) => {
+            const img = images[i];
+            return (
+              <div key={slot} className="relative">
+                {img ? (
+                  <div className="relative overflow-hidden rounded-2xl border border-warm-200 shadow-sm">
+                    <Image src={`data:image/jpeg;base64,${img}`} alt={slot} width={180} height={180} unoptimized className="aspect-square w-full object-cover" />
+                    <button onClick={() => removeImage(i)} className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-warm-900/80 text-xs text-white">×</button>
+                    <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-xs text-warm-600">{slot}</span>
+                  </div>
+                ) : (
+                  <label className="grid aspect-square cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-warm-200 bg-warm-50 transition-all hover:border-accent hover:bg-accent/5">
+                    <input type="file" accept="image/*" multiple onChange={handleImages} className="hidden" />
+                    <div className="text-center">
+                      <div className="mx-auto grid h-9 w-9 place-items-center rounded-full bg-white text-lg text-accent shadow-sm">+</div>
+                      <p className="mt-2 text-sm font-medium text-warm-600">{slot}</p>
+                      <p className="mt-1 text-xs text-warm-400">点击上传</p>
+                    </div>
+                  </label>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-xs text-warm-400">图片分析需要配置 OpenAI Key；未配置时会跳过图片理解，但仍可生成文案。</p>
+      </section>
+
+      <section className="rounded-2xl border border-warm-200 bg-white p-5">
+        <div className="mb-5">
+          <h3 className="text-base font-bold text-warm-900">成本与定价</h3>
+          <p className="mt-1 text-sm text-warm-500">填写后 AI 会给出目标市场定价建议。</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <label className="text-sm font-medium text-warm-700">产品拿货价 ¥</label>
+            <input ref={productCostRef} type="number" defaultValue="" placeholder="如：68" onChange={updatePrice}
+              className="mt-1.5 w-full rounded-xl border border-warm-200 bg-white px-4 py-3 text-sm text-warm-800 placeholder:text-warm-300 shadow-sm transition-all focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20" />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-warm-700">物流费用 ¥</label>
+            <input ref={shippingCostRef} type="number" defaultValue="" placeholder="如：15" onChange={updatePrice}
+              className="mt-1.5 w-full rounded-xl border border-warm-200 bg-white px-4 py-3 text-sm text-warm-800 placeholder:text-warm-300 shadow-sm transition-all focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20" />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-warm-700">期望利润率 %</label>
+            <input ref={profitMarginRef} type="number" defaultValue="40" onChange={updatePrice}
+              className="mt-1.5 w-full rounded-xl border border-warm-200 bg-white px-4 py-3 text-sm text-warm-800 shadow-sm transition-all focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20" />
+          </div>
+        </div>
+        {sellingPrice && (
+          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <span className="text-xs font-medium text-emerald-600">粗略售价预估</span>
+            <p className="mt-1 text-xl font-bold text-emerald-900">¥{sellingPrice}</p>
+          </div>
+        )}
+      </section>
 
       <button onClick={handleSubmit} disabled={loading}
-        className="w-full rounded-lg bg-zinc-900 py-3 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+        className="w-full rounded-2xl bg-gradient-to-r from-accent to-accent-dark py-4 text-sm font-semibold text-white shadow-lg shadow-accent/20 transition-all hover:from-accent-dark hover:to-accent-dark hover:shadow-xl hover:shadow-accent/25 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40">
         {loading ? "AI 正在分析产品…" : "下一步：AI 智能追问"}
       </button>
     </div>

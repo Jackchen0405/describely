@@ -1,4 +1,5 @@
 export type TargetMarket = "US" | "UK" | "DE" | "FR" | "JP" | "KR" | "ES" | "IT" | "BR" | "MX";
+export type PlatformId = "amazon" | "shopify" | "tiktok" | "woocommerce";
 
 export interface MarketConfig {
   country: string;
@@ -26,6 +27,7 @@ export interface ProductBasicInput {
   name: string;
   category: string;
   targetMarket: TargetMarket;
+  platform: PlatformId;
   productCost?: number;
   shippingCost?: number;
   profitMargin?: number;
@@ -42,6 +44,7 @@ export interface ProductFullInput {
   name: string;
   category: string;
   targetMarket: TargetMarket;
+  platform: PlatformId;
   answers: Record<string, string>;
   imageAnalysis: ImageAnalysis | null;
   productCost?: number;
@@ -68,6 +71,11 @@ export interface GeneratedProduct {
   longDescription: string;
   bulletPoints: string[];
   backendKeywords: string;
+  platformNotes?: string[];
+  platformFields?: {
+    label: string;
+    value: string;
+  }[];
   aPlusContent: {
     brandStory: string;
     featureModules: APlusModule[];
@@ -92,4 +100,27 @@ export interface TokenUsage {
   model: string;
   inputTokens: number;
   outputTokens: number;
+}
+
+export interface AuthUser {
+  id: string;
+  email?: string;
+  name: string;
+  avatar?: string;
+  provider: "email" | "wechat";
+  credits: number;
+  createdAt: string;
+  lastLoginAt: string;
+}
+
+export interface GenerationHistoryEntry {
+  id: string;
+  userId: string;
+  productName: string;
+  category: string;
+  targetMarket: TargetMarket;
+  platform: PlatformId;
+  result: GeneratedProduct;
+  usage: TokenUsage;
+  createdAt: string;
 }
