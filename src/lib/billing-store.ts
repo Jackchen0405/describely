@@ -28,6 +28,24 @@ interface SupabaseOrderRow {
   updated_at: string;
 }
 
+interface SupabaseUserLiteRow {
+  id: string;
+  email?: string | null;
+  name: string;
+  provider: "email" | "wechat";
+  credits: number;
+}
+
+export interface AdminPaymentOrder extends PaymentOrder {
+  user?: {
+    id: string;
+    email?: string;
+    name: string;
+    provider: "email" | "wechat";
+    credits: number;
+  };
+}
+
 function ensureDataDir() {
   const dir = path.join(process.cwd(), "data");
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -134,6 +152,48 @@ export async function getRecentOrdersForUser(userId: string) {
     return rows.map(fromSupabaseOrder);
   }
   return readOrders().filter((order) => order.userId === userId).slice(0, 20);
+}
+
+export async function getAdminOrders(
+  status?: PaymentOrderStatus | "all",
+  limit = 100
+): Promise<AdminPaymentOrder[]> {
+  const safeLimit = Math.min(Math.max(limit, 1), 200);
+
+  if (hasSupabaseConfig()) {
+    const statusQuery = status && status !== "all" ? `status=eq.${encodeURIComponent(status)}&` : "";
+    const rows = await selectRows<SupabaseOrderRow>(
+      "payment_orders",
+      `${statusQuery}order=created_at.desc&limit=${safeLimit}`
+    );
+    const orders = rows.map(fromSupabaseOrder);
+    const userIds = Array.from(new Set(orders.map((order) => order.userId))).filter(Boolean);
+
+    if (userIds.length === 0) return orders;
+
+    const userRows = await selectRows<SupabaseUserLiteRow>(
+      "app_users",
+      `id=in.(${userIds.map(encodeURIComponent).join(",")})&select=id,email,name,provider,credits`
+    );
+    const users = new Map(
+      userRows.map((user) => [
+        user.id,
+        {
+          id: user.id,
+          email: user.email || undefined,
+          name: user.name,
+          provider: user.provider,
+          credits: user.credits,
+        },
+      ])
+    );
+
+    return orders.map((order) => ({ ...order, user: users.get(order.userId) }));
+  }
+
+  return readOrders()
+    .filter((order) => !status || status === "all" || order.status === status)
+    .slice(0, safeLimit);
 }
 
 export async function confirmManualOrder(orderId: string, note?: string) {
