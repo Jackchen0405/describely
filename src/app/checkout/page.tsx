@@ -34,9 +34,9 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       <main className="mx-auto grid max-w-5xl gap-6 px-6 py-16 lg:grid-cols-[1fr_0.85fr]">
         <section className="rounded-xl border border-warm-200 bg-white p-7 shadow-sm">
           <span className="text-xs font-semibold uppercase text-accent-dark">Checkout</span>
-          <h1 className="mt-3 text-4xl font-bold text-warm-900">确认购买</h1>
+          <h1 className="mt-3 text-4xl font-bold text-warm-900">确认充值</h1>
           <p className="mt-4 text-base leading-relaxed text-warm-600">
-            先生成订单，后续接入微信支付或支付宝后会自动到账；在正式支付通道接入前，可以用人工确认方式完成充值。
+            先生成订单，再扫码付款。付款时备注订单后 6 位，我们确认收款后，额度会自动加到你的账号里。
           </p>
 
           <div className="mt-8 rounded-xl border border-warm-200 bg-cream p-5">
@@ -44,7 +44,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               <div>
                 <p className="text-sm font-semibold text-warm-500">{isTraffic ? "流量包" : "额度套餐"}</p>
                 <h2 className="mt-2 text-2xl font-bold text-warm-900">{product.name}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-warm-600">{product.desc}。</p>
+                <p className="mt-2 text-sm leading-relaxed text-warm-600">{product.desc}</p>
               </div>
               <span className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-accent-dark">
                 {formatCredits(product.credits, product.kind)}
@@ -57,7 +57,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
           </div>
 
           <div className="mt-6 grid gap-3 md:grid-cols-3">
-            {["登录账号", "创建订单", "确认到账"].map((step, index) => (
+            {["登录账号", "生成订单", "扫码付款"].map((step, index) => (
               <div key={step} className="rounded-lg border border-warm-100 bg-white px-4 py-3">
                 <span className="text-xs font-bold text-accent-dark">0{index + 1}</span>
                 <p className="mt-2 text-sm font-bold text-warm-900">{step}</p>
@@ -69,14 +69,11 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
         </section>
 
         <aside className="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-sm lg:self-start">
-          <h2 className="text-lg font-bold text-amber-950">支付接入进度</h2>
-          <p className="mt-3 text-sm leading-relaxed text-amber-800">
-            微信支付和支付宝商户资质申请需要时间。现在先保留订单、额度和人工确认流程，后面商户号通过后直接把支付回调接到订单系统。
-          </p>
-          <div className="mt-6 space-y-3 text-sm leading-relaxed text-amber-800">
-            <p className="rounded-lg bg-white px-4 py-3">订单状态会先进入“待确认”。</p>
-            <p className="rounded-lg bg-white px-4 py-3">人工确认后，系统会写入额度流水并增加账号额度。</p>
-            <p className="rounded-lg bg-white px-4 py-3">正式支付上线后，支付回调会替代人工确认。</p>
+          <h2 className="text-lg font-bold text-amber-950">到账说明</h2>
+          <div className="mt-4 space-y-3 text-sm leading-relaxed text-amber-800">
+            <p className="rounded-lg bg-white px-4 py-3">付款备注请填写订单后 6 位，方便我们快速匹配订单。</p>
+            <p className="rounded-lg bg-white px-4 py-3">早期测试阶段为人工确认，通常会尽快处理；不在线时可能会稍有延迟。</p>
+            <p className="rounded-lg bg-white px-4 py-3">确认后额度会自动到账，历史订单也会保留在系统里。</p>
           </div>
         </aside>
       </main>

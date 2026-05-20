@@ -42,5 +42,6 @@ next-env.d.ts
 
 # misc
 *.png
+!public/payment/*.png
 data/users.json
 data/history.json
