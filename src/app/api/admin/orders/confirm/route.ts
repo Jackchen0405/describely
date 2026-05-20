@@ -10,12 +10,12 @@ function getAdminToken(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const expected = process.env.ADMIN_RECHARGE_TOKEN || "";
+  const expected = (process.env.ADMIN_RECHARGE_TOKEN || "").trim();
   if (!expected) {
     return NextResponse.json({ error: "未配置 ADMIN_RECHARGE_TOKEN" }, { status: 500 });
   }
 
-  const token = getAdminToken(req);
+  const token = getAdminToken(req).trim();
   if (!token || token !== expected) {
     return NextResponse.json({ error: "无权限确认订单" }, { status: 401 });
   }
