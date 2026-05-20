@@ -35,11 +35,11 @@ export async function POST(req: NextRequest) {
     }
 
     const { result, usage } = await generateProductContent(input, input.imageAnalysis);
-    const creditResult = consumeUserCredit(user.id);
+    const creditResult = await consumeUserCredit(user.id);
     if (!creditResult?.ok) {
       return NextResponse.json({ error: "试用额度已用完，请升级套餐或稍后再试" }, { status: 402 });
     }
-    const history = addHistoryEntry(user.id, input, result, usage);
+    const history = await addHistoryEntry(user.id, input, result, usage);
 
     return NextResponse.json({
       result,

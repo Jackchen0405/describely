@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   if (id) {
-    const entry = getHistoryEntryForUser(user.id, id);
+    const entry = await getHistoryEntryForUser(user.id, id);
     if (!entry) {
       return NextResponse.json({ error: "没有找到这条历史记录" }, { status: 404 });
     }
@@ -21,6 +21,6 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({
-    entries: getHistoryForUser(user.id),
+    entries: await getHistoryForUser(user.id),
   });
 }

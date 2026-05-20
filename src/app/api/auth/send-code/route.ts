@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { storeVerificationCode } from "@/lib/auth-store";
 
 export const dynamic = "force-dynamic";
 
@@ -28,10 +29,12 @@ export async function POST(req: NextRequest) {
   }
 
   const code = makeCode();
+  const expiresAt = Date.now() + 1000 * 60 * 10;
   codeStore.set(normalized, {
     code,
-    expiresAt: Date.now() + 1000 * 60 * 10,
+    expiresAt,
   });
+  await storeVerificationCode(normalized, code, expiresAt);
 
   // Prototype note: production should send this code via an email provider.
   return NextResponse.json({

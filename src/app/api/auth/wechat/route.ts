@@ -5,7 +5,7 @@ import { createSessionToken, SESSION_COOKIE } from "@/lib/session";
 export const dynamic = "force-dynamic";
 
 export async function POST() {
-  const user = upsertWechatDemoUser();
+  const user = await upsertWechatDemoUser();
   const token = createSessionToken(user.id);
   const res = NextResponse.json({
     user,
