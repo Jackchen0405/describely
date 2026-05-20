@@ -84,7 +84,7 @@ function LoginContent() {
     <div className="min-h-screen bg-cream">
       <header className="border-b border-warm-200">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-xl font-bold text-warm-900">buluba</Link>
+          <Link href="/" className="text-xl font-bold text-warm-900">BULUBA</Link>
           <Link href="/" className="text-sm text-warm-400 transition-colors hover:text-warm-700">返回首页</Link>
         </div>
       </header>
@@ -107,7 +107,7 @@ function LoginContent() {
           <section className="p-8 sm:p-10">
             <div className="mx-auto max-w-sm">
               <h2 className="text-2xl font-bold text-warm-900">欢迎回来</h2>
-              <p className="mt-2 text-sm text-warm-500">选择一种方式继续使用 buluba</p>
+              <p className="mt-2 text-sm text-warm-500">选择一种方式继续使用 BULUBA</p>
 
               <button
                 onClick={handleWechatLogin}
@@ -175,7 +175,7 @@ function LoginContent() {
 
               {error && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}
               <p className="mt-6 text-xs leading-relaxed text-warm-400">
-                登录即表示你同意使用 buluba 保存必要账号信息，用于试用额度、套餐和生成历史。
+                登录即表示你同意使用 BULUBA 保存必要账号信息，用于试用额度、套餐和生成历史。
               </p>
             </div>
           </section>

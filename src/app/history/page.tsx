@@ -220,7 +220,7 @@ export default function HistoryPage() {
     <div className="min-h-screen bg-cream">
       <header className="border-b border-warm-200 bg-cream/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-xl font-bold text-warm-900">buluba</Link>
+          <Link href="/" className="text-xl font-bold text-warm-900">BULUBA</Link>
           <div className="flex items-center gap-3">
             <AuthStatus />
             <Link href="/tool" className="text-sm text-warm-400 hover:text-warm-700">继续生成</Link>

@@ -19,7 +19,7 @@ export default function LegalPage({ eyebrow, title, intro, updated = "2026-05-19
     <div className="min-h-screen bg-[#f7efe3] text-[#24160f]">
       <header className="border-b border-[#2b1a12]/10 bg-[#f7efe3]/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
-          <Link href="/" className="text-xl font-black tracking-tight">buluba</Link>
+          <Link href="/" className="text-xl font-black tracking-tight">BULUBA</Link>
           <Link href="/tool" className="rounded-lg bg-[#24160f] px-4 py-2 text-sm font-bold text-white hover:bg-[#c7512f]">
             在线试用
           </Link>

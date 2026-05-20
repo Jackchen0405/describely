@@ -8,7 +8,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "buluba — AI跨境商品文案助手",
+  title: "BULUBA — AI跨境商品文案助手",
   description: "为中国跨境卖家生成有场景、有卖点、有转化张力的商品标题、五点描述、SEO和平台上架文案。",
 };
 

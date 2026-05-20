@@ -5,7 +5,7 @@ export default function PrivacyPage() {
     <LegalPage
       eyebrow="Privacy"
       title="隐私政策"
-      intro="本政策说明 buluba 在提供 AI 跨境商品文案助手服务时，如何收集、使用和保护你的信息。当前产品仍处于测试阶段，正式上线后我们会根据实际功能继续更新。"
+      intro="本政策说明 BULUBA 在提供 AI 跨境商品文案助手服务时，如何收集、使用和保护你的信息。当前产品仍处于测试阶段，正式上线后我们会根据实际功能继续更新。"
       sections={[
         {
           title: "我们会收集哪些信息",

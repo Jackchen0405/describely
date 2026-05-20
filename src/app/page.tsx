@@ -12,10 +12,10 @@ const navItems = [
 ];
 
 const modelBadges = [
-  { key: "claude", name: "Claude", desc: "长上下文、细腻表达、复杂商品资料理解" },
-  { key: "chatgpt", name: "ChatGPT", desc: "复杂推理、多语言、本地化改写" },
-  { key: "gemini", name: "Gemini", desc: "多模态、图片理解、长资料分析" },
-  { key: "deepseek", name: "DeepSeek", desc: "高性价比批量文案生成和字段整理" },
+  { key: "claude", name: "Claude", desc: "付费精写主模型，适合长文案、细腻表达和复杂商品资料理解" },
+  { key: "chatgpt", name: "ChatGPT", desc: "用于复杂推理、多语言润色、本地化改写和结构校对" },
+  { key: "gemini", name: "Gemini", desc: "用于多模态图片理解、长资料分析和商品信息补全" },
+  { key: "deepseek", name: "DeepSeek", desc: "免费体验和基础整理模型，用来低成本跑通生成流程" },
 ];
 
 const workflow = [
@@ -161,7 +161,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#f7efe3] text-[#24160f]">
       <header className="sticky top-0 z-20 border-b border-[#2b1a12]/10 bg-[#f7efe3]/88 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-          <Link href="/" className="text-xl font-black tracking-tight">buluba</Link>
+          <Link href="/" className="text-xl font-black tracking-tight">BULUBA</Link>
           <nav className="hidden items-center gap-6 md:flex">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href} className="text-sm font-medium text-[#6d5a4c] transition-colors hover:text-[#24160f]">
@@ -190,7 +190,7 @@ export default function LandingPage() {
                 把商品参数写成买家想下单的理由
               </h1>
               <p className="mt-7 max-w-2xl text-lg leading-8 text-white/68">
-                buluba 为中国跨境卖家把图片、成本、卖点和目标市场，生成可直接上架的高转化文案。不是翻译字段，而是用强模型和文案方法论重写 Listing。
+                BULUBA 为中国跨境卖家把图片、成本、卖点和目标市场，生成可直接上架的高转化文案。不是翻译字段，而是用 Claude 级别强模型和文案方法论重写 Listing。
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Link href="/tool" className="rounded-lg bg-[#f05f3b] px-6 py-3 text-sm font-black text-white shadow-xl shadow-[#f05f3b]/25 transition-colors hover:bg-[#d94c2e]">
@@ -244,7 +244,7 @@ export default function LandingPage() {
               <span className="text-sm font-black uppercase tracking-[0.16em] text-[#7b3a27]">Copy Tension</span>
               <h2 className="mt-4 text-5xl font-black leading-tight text-[#24160f]">不是把字段填满，而是改变买家看待产品的角度</h2>
               <p className="mt-5 max-w-xl text-base leading-8 text-[#5c4536]">
-                普通 AI 会写“高品质、适合日常”。buluba 要做的是把工厂参数、卖家经验和竞品痛点，转成有画面、有情绪、有购买理由的表达。
+                普通 AI 会写“高品质、适合日常”。BULUBA 要做的是把工厂参数、卖家经验和竞品痛点，转成有画面、有情绪、有购买理由的表达。
               </p>
             </div>
             <div className="grid gap-3">
@@ -286,10 +286,20 @@ export default function LandingPage() {
             <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
               <div>
                 <span className="text-sm font-black uppercase tracking-[0.16em] text-[#9be3d4]">Model Stack</span>
-                <h2 className="mt-4 text-5xl font-black leading-tight">我们使用 Claude、ChatGPT、Gemini、DeepSeek 这类强模型</h2>
+                <h2 className="mt-4 text-5xl font-black leading-tight">免费先试 DeepSeek，付费主打 Claude 精写</h2>
                 <p className="mt-5 text-base leading-8 text-white/62">
-                  图片理解、AI 追问、长文案生成和字段精修会交给更适合的模型处理。用户看到的是稳定体验，背后是强模型能力和文案方法论共同工作。
+                  DeepSeek 用来让新用户低成本体验流程；付费生成会把长文案、情绪种草、平台字段精修交给 Claude 为主的强模型处理，ChatGPT 和 Gemini 负责补充推理、多语言和图片理解能力。
                 </p>
+                <div className="mt-6 grid gap-3 text-sm text-white/72 sm:grid-cols-2">
+                  <div className="rounded-lg border border-white/10 bg-white/[0.05] p-4">
+                    <p className="font-black text-white">免费体验</p>
+                    <p className="mt-2 leading-6">用 DeepSeek 跑通商品资料、平台模板和基础文案结构。</p>
+                  </div>
+                  <div className="rounded-lg border border-[#f0c36d]/30 bg-[#f0c36d]/10 p-4">
+                    <p className="font-black text-[#f0c36d]">付费精写</p>
+                    <p className="mt-2 leading-6">用 Claude 主写更像真人、更有场景和购买理由的上架文案。</p>
+                  </div>
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {modelBadges.map((item) => (
@@ -306,17 +316,60 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-[#f7efe3] px-5 py-20 lg:px-8">
-          <div className="mx-auto grid max-w-7xl gap-6 rounded-lg border border-[#2b1a12]/10 bg-white p-8 shadow-sm lg:grid-cols-[1fr_auto] lg:items-center">
+        <section className="bg-[#fffaf2] py-20">
+          <div className="mx-auto grid max-w-7xl gap-8 px-5 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
             <div>
-              <h2 className="text-4xl font-black text-[#24160f]">先跑通一个商品，再批量上品</h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-[#6d5a4c]">
-                当前原型已经支持登录、额度、平台模板、文案风格强度和生成历史详情。下一步可以继续完善导出、成本核算和真实微信登录。
+              <span className="text-sm font-black uppercase tracking-[0.16em] text-[#c7512f]">Credits</span>
+              <h2 className="mt-4 text-5xl font-black leading-tight text-[#24160f]">额度不是死次数，而是按模型和生成深度消耗</h2>
+              <p className="mt-5 text-base leading-8 text-[#6d5a4c]">
+                一个简单商品不应该和一套复杂资料收同样成本。BULUBA 会把模型、输入长度、输出长度和精写强度纳入扣减规则，让价格对用户容易理解，也让服务长期可持续。
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/tool" className="rounded-lg bg-[#c7512f] px-6 py-3 text-sm font-black text-white hover:bg-[#9f3c22]">在线试用</Link>
-              <Link href="/pricing" className="rounded-lg border border-[#2b1a12]/15 px-6 py-3 text-sm font-black text-[#24160f] hover:border-[#c7512f]">价格占位</Link>
+            <div className="grid gap-3 md:grid-cols-3">
+              {[
+                ["基础生成", "1 额度起", "免费体验优先使用 DeepSeek，适合先看流程和字段结构。"],
+                ["Claude 精写", "2 额度起", "适合正式上架、长描述、情绪种草和平台字段精修。"],
+                ["深度生成", "3 额度起", "适合图片多、资料长、需要更强推理和多版本表达的商品。"],
+              ].map(([title, amount, desc]) => (
+                <article key={title} className="rounded-lg border border-[#2b1a12]/10 bg-white p-5 shadow-sm">
+                  <p className="text-sm font-black text-[#c7512f]">{title}</p>
+                  <p className="mt-4 text-3xl font-black text-[#24160f]">{amount}</p>
+                  <p className="mt-4 text-sm leading-7 text-[#6d5a4c]">{desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#f7efe3] px-5 py-20 lg:px-8">
+          <div className="mx-auto grid max-w-7xl overflow-hidden rounded-lg border border-[#2b1a12]/10 bg-[#121614] shadow-sm lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="p-8 text-white sm:p-10">
+              <span className="text-sm font-black uppercase tracking-[0.16em] text-[#9be3d4]">Start Small</span>
+              <h2 className="mt-4 max-w-3xl text-4xl font-black leading-tight sm:text-5xl">先免费试用，确认效果后再用 Claude 精写批量上新</h2>
+              <p className="mt-5 max-w-2xl text-base leading-8 text-white/66">
+                不需要一开始就充值。先用 DeepSeek 体验从商品资料、AI 追问到平台字段的完整流程；如果结果方向对，再用付费额度生成更适合正式上架的 Claude 精写版本。
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/tool" className="rounded-lg bg-[#f05f3b] px-6 py-3 text-sm font-black text-white hover:bg-[#d94c2e]">开始免费试用</Link>
+                <Link href="/pricing" className="rounded-lg border border-white/15 px-6 py-3 text-sm font-black text-white hover:border-[#f0c36d]">查看额度价格</Link>
+              </div>
+            </div>
+            <div className="grid border-t border-white/10 bg-white/[0.04] lg:border-l lg:border-t-0">
+              {[
+                ["01", "免费体验流程", "先看平台模板、追问逻辑和基础文案结构是否适合你的商品。"],
+                ["02", "付费精写上架", "正式商品用 Claude 精写标题、五点、长描述和 SEO 字段。"],
+                ["03", "保存历史复用", "生成结果进入历史记录，后续同类商品可以继续参考和修改。"],
+              ].map(([num, title, desc]) => (
+                <div key={num} className="border-b border-white/10 p-6 last:border-b-0">
+                  <div className="flex items-start gap-4">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#f0c36d] text-sm font-black text-[#24160f]">{num}</span>
+                    <div>
+                      <h3 className="text-lg font-black text-white">{title}</h3>
+                      <p className="mt-2 text-sm leading-7 text-white/58">{desc}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>

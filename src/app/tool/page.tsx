@@ -160,7 +160,7 @@ export default function ToolPage() {
       <header className="sticky top-0 z-20 border-b border-warm-200 bg-cream/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-6 py-4">
           <div className="flex items-center gap-2">
-            <Link href="/" className="text-lg font-bold text-warm-900 tracking-tight hover:text-accent transition-colors">buluba</Link>
+            <Link href="/" className="text-lg font-bold text-warm-900 tracking-tight hover:text-accent transition-colors">BULUBA</Link>
             <span className="hidden rounded-full bg-warm-100 px-2 py-0.5 text-xs font-medium text-warm-500 sm:inline">Listing Workspace</span>
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -203,8 +203,8 @@ export default function ToolPage() {
           <div className={`rounded-2xl border p-4 shadow-sm ${user ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}>
             {user ? (
               <>
-                <p className="text-sm font-semibold text-emerald-900">剩余 {user.credits} 次生成额度</p>
-                <p className="mt-1 text-xs leading-relaxed text-emerald-700">AI 追问不扣额度，生成完整文案扣 1 次。</p>
+                <p className="text-sm font-semibold text-emerald-900">剩余 {user.credits} 额度</p>
+                <p className="mt-1 text-xs leading-relaxed text-emerald-700">AI 追问不扣额度。基础生成 1 额度起，Claude 精写后续按模型成本动态扣减。</p>
                 <Link href="/history" className="mt-3 inline-block rounded-full border border-emerald-300 bg-white px-4 py-2 text-xs font-semibold text-emerald-800">查看历史</Link>
               </>
             ) : (
