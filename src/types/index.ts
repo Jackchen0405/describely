@@ -128,3 +128,33 @@ export interface GenerationHistoryEntry {
   usage: TokenUsage;
   createdAt: string;
 }
+
+export type PaymentOrderStatus = "pending" | "paid" | "cancelled" | "expired";
+export type PaymentMethod = "manual" | "wechat" | "alipay";
+
+export interface PaymentOrder {
+  id: string;
+  userId: string;
+  productId: string;
+  productName: string;
+  productKind: "plan" | "traffic";
+  amountCny: number;
+  credits: number;
+  status: PaymentOrderStatus;
+  paymentMethod: PaymentMethod;
+  paidAt?: string;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreditLogEntry {
+  id: number | string;
+  userId: string;
+  change: number;
+  reason: string;
+  orderId?: string;
+  historyId?: string;
+  balanceAfter?: number;
+  createdAt: string;
+}

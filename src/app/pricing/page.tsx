@@ -1,63 +1,17 @@
 import Link from "next/link";
 import AuthStatus from "@/components/AuthStatus";
+import {
+  checkoutProducts,
+  costNotes,
+  creditRules,
+  formatCredits,
+  formatPrice,
+  freePlan,
+  paidBenefits,
+} from "@/lib/pricing";
 
-const freePlan = {
-  name: "免费试用",
-  price: "¥0",
-  desc: "新账号赠送 5 次体验机会，先判断流程和结果方向",
-  badge: "DeepSeek 体验",
-  points: ["DeepSeek 基础生成", "平台模板与目标国家", "AI 追问和基础字段", "生成历史可查看"],
-};
-
-const paidBenefits = [
-  "充值后使用 Claude / ChatGPT / Gemini 强模型池",
-  "Claude 精写标题、五点、长描述和 SEO 字段",
-  "文案风格强度、平台模板、目标国家本地化",
-  "历史记录、复制字段、后续导出能力优先支持",
-];
-
-const paidPlans = [
-  {
-    id: "starter",
-    name: "入门包",
-    price: "¥25",
-    desc: "适合先小额体验 Claude 精写效果",
-    badge: "约 50 额度",
-  },
-  {
-    id: "standard",
-    name: "标准包",
-    price: "¥45",
-    desc: "适合每周稳定上新，单次额度更划算",
-    badge: "约 100 额度",
-    highlight: true,
-  },
-  {
-    id: "pro",
-    name: "进阶包",
-    price: "¥68",
-    desc: "适合批量铺货或连续优化多个商品",
-    badge: "约 160 额度",
-  },
-];
-
-const trafficPacks = [
-  ["traffic-small", "小流量包", "¥9", "补充约 15 额度"],
-  ["traffic-plus", "加量包", "¥19", "补充约 40 额度"],
-  ["traffic-sprint", "冲刺包", "¥39", "补充约 90 额度"],
-];
-
-const creditRules = [
-  ["免费体验", "DeepSeek", "新账号 5 次免费体验，用来判断工具流程、平台模板和基础结果方向。"],
-  ["付费精写", "2 额度起", "充值后使用 Claude / ChatGPT / Gemini 强模型池，正式商品优先走 Claude 精写。"],
-  ["深度生成", "3 额度起", "资料更长、图片更多、输出更复杂时会消耗更多额度。"],
-];
-
-const costNotes = [
-  "DeepSeek 免费体验单次成本很低，但新账号 5 次体验仍会计入获客成本。",
-  "Claude 精写按输入、输出和图片理解成本核算，复杂商品会消耗更多额度。",
-  "当前额度数量采用保守口径，先保证不因强模型调用导致亏损。",
-];
+const paidPlans = checkoutProducts.filter((product) => product.kind === "plan");
+const trafficPacks = checkoutProducts.filter((product) => product.kind === "traffic");
 
 export default function PricingPage() {
   return (
@@ -111,10 +65,10 @@ export default function PricingPage() {
             >
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-xl font-bold text-warm-900">{plan.name}</h2>
-                <span className="rounded-full bg-warm-100 px-3 py-1 text-xs font-semibold text-warm-700">{plan.badge}</span>
+                <span className="rounded-full bg-warm-100 px-3 py-1 text-xs font-semibold text-warm-700">{formatCredits(plan.credits, plan.kind)}</span>
               </div>
               <div className="mt-5 flex items-end gap-2">
-                <span className="text-4xl font-bold text-warm-900">{plan.price}</span>
+                <span className="text-4xl font-bold text-warm-900">{formatPrice(plan.priceCny)}</span>
                 <span className="pb-1 text-sm text-warm-400">/ 次充值</span>
               </div>
               <p className="mt-3 text-sm text-warm-500">{plan.desc}</p>
@@ -146,13 +100,13 @@ export default function PricingPage() {
             <span className="text-xs font-semibold uppercase text-accent-dark">Add-on Credits</span>
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
-            {trafficPacks.map(([id, name, price, desc]) => (
-              <div key={id} className="rounded-lg border border-warm-100 bg-cream p-4">
-                <p className="text-sm font-bold text-warm-900">{name}</p>
-                <p className="mt-3 text-3xl font-bold text-warm-900">{price}</p>
-                <p className="mt-2 text-sm text-warm-500">{desc}</p>
+            {trafficPacks.map((product) => (
+              <div key={product.id} className="rounded-lg border border-warm-100 bg-cream p-4">
+                <p className="text-sm font-bold text-warm-900">{product.name}</p>
+                <p className="mt-3 text-3xl font-bold text-warm-900">{formatPrice(product.priceCny)}</p>
+                <p className="mt-2 text-sm text-warm-500">{formatCredits(product.credits, product.kind)}</p>
                 <Link
-                  href={`/checkout?type=traffic&id=${id}`}
+                  href={`/checkout?type=traffic&id=${product.id}`}
                   className="mt-4 inline-flex w-full justify-center rounded-lg border border-warm-300 bg-white px-4 py-2.5 text-sm font-bold text-warm-800 hover:border-accent"
                 >
                   购买流量包

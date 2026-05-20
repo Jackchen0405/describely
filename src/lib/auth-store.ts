@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { AuthUser } from "@/types";
-import { deleteRows, hasSupabaseConfig, patchRows, selectOne, upsertRow } from "@/lib/supabase-rest";
+import { deleteRows, hasSupabaseConfig, insertRow, patchRows, selectOne, upsertRow } from "@/lib/supabase-rest";
 
 const USERS_FILE = path.join(process.cwd(), "data", "users.json");
 
@@ -53,6 +53,17 @@ interface VerificationCodeRow {
   expires_at: string;
 }
 
+interface CreditLogRow {
+  id: number;
+  user_id: string;
+  change: number;
+  reason: string;
+  order_id?: string | null;
+  history_id?: string | null;
+  balance_after?: number | null;
+  created_at: string;
+}
+
 function fromSupabaseUser(row: SupabaseUserRow): AuthUser {
   return {
     id: row.id,
@@ -94,12 +105,20 @@ export async function consumeUserCredit(id: string) {
     if (user.credits <= 0) return { user, ok: false };
 
     const now = new Date().toISOString();
+    const nextCredits = user.credits - 1;
     const rows = await patchRows<SupabaseUserRow>(
       "app_users",
       `id=eq.${encodeURIComponent(id)}`,
-      { credits: user.credits - 1, last_login_at: now }
+      { credits: nextCredits, last_login_at: now }
     );
-    const updated = rows[0] ? fromSupabaseUser(rows[0]) : { ...user, credits: user.credits - 1, lastLoginAt: now };
+    await insertRow<CreditLogRow>("credit_logs", {
+      user_id: id,
+      change: -1,
+      reason: "generate",
+      balance_after: nextCredits,
+      created_at: now,
+    });
+    const updated = rows[0] ? fromSupabaseUser(rows[0]) : { ...user, credits: nextCredits, lastLoginAt: now };
     return { user: updated, ok: true };
   }
 
@@ -112,6 +131,40 @@ export async function consumeUserCredit(id: string) {
   user.lastLoginAt = new Date().toISOString();
   writeUsers(users);
   return { user, ok: true };
+}
+
+export async function addUserCredits(id: string, credits: number, reason: string, orderId?: string) {
+  if (credits <= 0) throw new Error("credits must be positive");
+
+  if (hasSupabaseConfig()) {
+    const user = await findUserById(id);
+    if (!user) return null;
+
+    const now = new Date().toISOString();
+    const nextCredits = user.credits + credits;
+    const rows = await patchRows<SupabaseUserRow>(
+      "app_users",
+      `id=eq.${encodeURIComponent(id)}`,
+      { credits: nextCredits, last_login_at: now }
+    );
+    await insertRow<CreditLogRow>("credit_logs", {
+      user_id: id,
+      change: credits,
+      reason,
+      order_id: orderId || null,
+      balance_after: nextCredits,
+      created_at: now,
+    });
+    return rows[0] ? fromSupabaseUser(rows[0]) : { ...user, credits: nextCredits, lastLoginAt: now };
+  }
+
+  const users = readUsers();
+  const user = users.find((item) => item.id === id);
+  if (!user) return null;
+  user.credits += credits;
+  user.lastLoginAt = new Date().toISOString();
+  writeUsers(users);
+  return user;
 }
 
 export async function upsertEmailUser(email: string) {
